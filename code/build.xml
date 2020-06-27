@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+   <project default="compile" name="XMLRPC" basedir=".">
+  
+     <property name="classesdir" value="classes" />
+     <property name="myjars" value="/home/sadr/Dropbox/Documents/Stuff/Programming/ICP3029/code/jars" />
+
+     <target name="compile" description="o Compile the code" depends="clean">
+        <mkdir dir="${classesdir}" />
+    
+        <javac includeantruntime="false" destdir="${classesdir}" >
+           <classpath>
+               <pathelement location="${myjars}/xmlrpc-2.0/xmlrpc-2.0.jar"/>
+           </classpath>
+          <src>
+               <pathelement location="./src" />
+          </src>      
+       </javac>
+    </target>
+
+    <target name="clean" description="o Clean up the generated directories">
+       <delete dir="${classesdir}" />
+       <delete file="*.class" />
+    </target>
+  
+</project>

@@ -1,0 +1,20 @@
+<array>
+   <data>
+      <value><i4>12</i4></value>
+      <value><string>Egypt</string></value>
+      <value><boolean>0</boolean></value>
+      <value><i4>-31</i4></value>
+      </data>
+   </array>
+
+
+<struct>
+   <member>
+      <name>lowerBound</name>
+      <value><i4>18</i4></value>
+      </member>
+   <member>
+      <name>upperBound</name>
+      <value><i4>139</i4></value>
+      </member>
+   </struct>

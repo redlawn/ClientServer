@@ -1,0 +1,103 @@
+% Tutorial 1 for icp1022
+\documentclass[12pt,a4paper]{article}
+
+\addtolength{\textwidth}{1.5cm}
+\addtolength{\hoffset}{-0.5cm}
+\addtolength{\voffset}{-1cm}
+\addtolength{\textheight}{2cm}
+
+\usepackage[dvips]{graphicx}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage[usenames]{color}
+\definecolor{MyLightGrey}{rgb}{0.9, 0.9, 0.9} 
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+{\textbf{\Huge Distributed Systems, Laboratory}}\\
+{\textit{\textbf{\Large 3. Further RPC}}}
+\end{center}
+
+\section*{Introduction}
+We have seen with RMI that RPC gives huge potential for distribution transparency. Other forms of RPC or RPC based protocols such as NFS allow applications to be designed with little change from the non-distributed model.
+
+However a few things hold back RMI from large scale or widespread implementation. RMI is purely Java based. All components in the distributed system must have a layer of Java between application systems and the network. This is not a problem for applications written in Java however for legacy systems or heterogenous distributed systems this could mean either too much work to implement or a design alteration for the whole system. Not many people want to redesign parts of their system.
+
+So we need a way of providing RPC, however we must find a way so every computing system can integrate easily into the distributed systems layer. One transport common to many systems is the http protocol and the provision for plain text transfer.  From this we can define representations of common data types for many programming languages and facilitate method calls and reponses. Packaging data into text structures can be acheived with a markup language. XML like HTML is a simple standard for defining documents and formatting. 
+\section*{XML RPC}
+XML-RPC is a specification for passing method data via a stream of text. We can view the entire specification here:  \url{http://www.xmlrpc.org/spec}. 
+The most notable parts of the specification are the data representation definitions, replicated here.
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+Scalar type & Representation & Example\\
+\hline
+\hline
+four-byte signed integer & {\tt $<$int$>$} & -12\\
+0 (false) or 1 (true) & {\tt $<$boolean$>$ } & 1 \\
+String & {\tt $<$string$>$} & Hello Rob \\
+Double precision signed float & $<$double$>$ & -12.214 \\
+Date &  $<$dateTime.iso8601$>$ & 19980717T14:08:55 \\
+Binary (base64) & $<$base65$>$ & eW91IGNhbid0IHJ= \\
+\hline
+\end{tabular}
+\end{center}
+
+Also in XML mark-up we can represent array data and also structured data. An example of each, taken from the specification are shown below:
+\pagebreak
+\verbatiminput{xmlarraystruct.txt}
+
+\subsection*{Request-Response}
+We can see an entire transaction take place accross an HTTP protocol system. This example makes a request to a remote object for
+the name of a US state, given its state number.
+\verbatiminput{xmlrpc-request.txt}
+\pagebreak
+Here we observe the response back to the client.
+\verbatiminput{xmlrpc-response.txt}
+
+\subsection*{XML-RPC in Java}
+From these standard data type definitions there is a representation in many common programming language. We can see the mapping from XML-RPC standard data type to Java data type here:
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+xml-rpc data type & Java data type equiv. \\
+\hline
+\hline
+$<$i4$>$ or $<$int$>$	 & java.lang.Integer \\	
+$<$boolean$>$	 & java.lang.Boolean\\	
+$<$string$>$	 & java.lang.String	\\
+$<$double$>$	 & java.lang.Double	\\
+$<$dateTime.iso8601$>$ & 	java.util.Date	\\
+$<$struct$>$	 & java.util.Hashtable	\\
+$<$array$>$	 & java.util.Vector	\\
+$<$base64$>$	& byte[ ] \\
+\hline
+\end{tabular}
+\end{center}
+Like RMI we do not have to start from scratch when implementing an xml-rpc based system. We can use a free API library designed and built by the web services project at the apache software foundation. The homepage for this can be found here: \url{http://ws.apache.org/xmlrpc/}. \\
+
+We will work through a simple example, again based on calculator arithmetic. We will start with the Server.
+
+Like the RMI system, xml-rpc has a unified place in which remote objects can be registered in order to be located easier. Unlike RMI however, xml-rpc uses the HTTP protocol and so may be used through a web server which supports XML-RPC. Our library however comes with a basic web server which we can use for our object's transport. Like the remote object in RMI, the XML-RPC object has a super type which we can extend to provision the basic capabilities of a remote object. This class is the {\tt org.apache.xmlrpc.XmlRpcHandler} Interface. Notice the use of the term {\em handler} - meaning once again this object just does the workload of the request and is not concerned with location or transport.
+This interface is very simple and the only method we are required to implement is
+\begin{verbatim}
+public Object execute(String method, Vector params)
+\end{verbatim}
+This very broad method is called by the transport provider upon request. Although broad we can take full control of what happens in this object. Notice the {\tt java.lang.Object} return type means we can return {\em any} java object from the method. 
+The parameters are also packed into a {\tt java.util.Vector}. We are without a common interface in this simple example. It is up to us to
+decide what to do based on the method name string supplied. \\
+We will define some methods named {\tt MyXmlRpc.add} and {\tt MyXmlRpc.sub}. We must unpack the vector to give us some valid input parameters and perform some calculations. Our resultant handler looks like this:
+\pagebreak
+\verbatiminput{MyXmlRpcHandler.java}
+\pagebreak
+The service is started using another application which, in this case starts a simple web server and creates an instance of our handler object. Our server application look like this:
+
+\verbatiminput{MyXmlRpcServer.java}
+
+The client is also fairly simple, gievn the library does all the work for us. A simple class for us to use is {\tt org.apache.xmlrpc.XmlRpcClientLite}. This class takes the url of the webserver as a parameter and has a public method the same as the Handler interface. So all we need to do is package up some data as parameters for our remote methods and also provide the remote method name as a string. Our client look like this.
+\pagebreak
+\verbatiminput{MyXmlRpcClient.java}
+\vfill
+\textit{Rob Shepherd, 2004}
+
+\end{document}
